@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 import pymysql
+from tkinter import messagebox
 
 
 class FinanzApp:
@@ -9,6 +10,10 @@ class FinanzApp:
         self.ventana.title("FinanzApp")
         self.ventana.geometry("1360x700+0+0")
         self.ventana.resizable(False, False)
+
+        # Variables
+        self.id = IntVar()
+
 
         title = Label(self.ventana, text="Sistema de finanzas personales", font=("Consolas", 40, "bold"), bg="black",
                       fg="white", bd=10, relief=RAISED)
@@ -22,21 +27,22 @@ class FinanzApp:
         m_title.grid(row=0, columnspan=2, pady=20)
 
         ################################## SALDO ##################################
+
         # Etiqueta Saldo Actual
         lbl_saldo_actual = Label(Manage_Frame, text="Saldo Actual", font=("Consolas", 15, "bold"), bg="black", fg="white")
         lbl_saldo_actual.grid(row=1, column=0, pady=10, padx=20, sticky="w")
+
         # Boton de Saldo Actual
+        self.saldo = 450900
+        btn_saldo_actual = Button(Manage_Frame, text=f"{self.saldo} cop", font=("Consolas", 15, "bold"), bg="white", fg="red", command=self.mostrar_saldo)
+        btn_saldo_actual.grid(row=1, column=1, pady=10, padx=20, sticky="w")
 
-
+        '''
         # Entrada de tipo entero Saldo Actual
         self.saldo = IntVar()
         txt_saldo_actual = Entry(Manage_Frame, textvariable=self.saldo, font=("Consolas", 15, "bold"), bd=5, relief=GROOVE)
         txt_saldo_actual.grid(row=1, column=1, pady=10, padx=20, sticky="w")
-
-
-
-
-
+        '''
 
         ################################## TIPO ##################################
         # Etiqueta Tipo
@@ -178,9 +184,9 @@ class FinanzApp:
         lbl_descripcion = Label(Manage_Frame, text="Descripcion", font=("Consolas", 15, "bold"), bg="black", fg="white")
         lbl_descripcion.grid(row=7, column=0, pady=10, padx=20, sticky="w")
         # Texto de Descripcion
-        self.descripcion = StringVar()
-        txt_descripcion = Text(Manage_Frame, width=30, height=4, font=("Consolas", 10, "bold"), bd=5, relief=GROOVE)
-        txt_descripcion.grid(row=7, column=1, pady=10, padx=20, sticky="w")
+        #self.descripcion = StringVar()
+        self.txt_descripcion = Text(Manage_Frame, width=30, height=4, font=("Consolas", 10, "bold"), bd=5, relief=GROOVE)
+        self.txt_descripcion.grid(row=7, column=1, pady=10, padx=20, sticky="w")
 
         ################################## BOTONES ##################################
 
@@ -203,16 +209,19 @@ class FinanzApp:
         Detail_Frame.place(x=560, y=100, width=780, height=580)
 
         ################################## busqueda ##################################
+        self.buscar_por = StringVar()
+        self.buscar_txt = StringVar()
+
         lbl_search = Label(Detail_Frame, text="Buscar por", bg="black", fg="white", font=("Consolas", 15, "bold"))
         lbl_search.grid(row=0, column=0, pady=10, padx=20, sticky="w")
 
         # combobox de busqueda que tenga los valores de tipo, categoria y subcategoria y fecha
-        combo_search = ttk.Combobox(Detail_Frame, font=("Consolas", 13, "bold"), state="readonly", width=10)
+        combo_search = ttk.Combobox(Detail_Frame, textvariable=self.buscar_por, font=("Consolas", 13, "bold"), state="readonly", width=10)
         combo_search['values'] = ("Tipo", "Categoria", "Subcategoria", "Fecha")
         combo_search.grid(row=0, column=1, padx=20, pady=10)
 
         # Entrada de busqueda
-        txt_search = Entry(Detail_Frame, font=("Consolas", 10, "bold"), bd=5, relief=GROOVE, width=20)
+        txt_search = Entry(Detail_Frame, textvariable=self.buscar_txt, font=("Consolas", 10, "bold"), bd=5, relief=GROOVE, width=20)
         txt_search.grid(row=0, column=2, padx=20, pady=10, sticky="w")
 
         # Boton de busqueda
@@ -227,28 +236,218 @@ class FinanzApp:
 
         scroll_x = Scrollbar(Table_Frame, orient=HORIZONTAL)
         scroll_y = Scrollbar(Table_Frame, orient=VERTICAL)
-        Finanzas_table = ttk.Treeview(Table_Frame, columns=("tipo", "categoria", "subcategoria", "monto", "fecha", "descripcion"), xscrollcommand=scroll_x.set, yscrollcommand=scroll_y.set)
+
+        self.Finanzas_table = ttk.Treeview(Table_Frame, columns=("Id", "Tipo", "Categoria", "Subcategoria", "Monto", "Fecha", "Descripcion"), xscrollcommand=scroll_x.set, yscrollcommand=scroll_y.set)
         scroll_x.pack(side=BOTTOM, fill=X)
         scroll_y.pack(side=RIGHT, fill=Y)
-        scroll_x.config(command=Finanzas_table.xview)
-        scroll_y.config(command=Finanzas_table.yview)
-        Finanzas_table.heading("tipo", text="Tipo")
-        Finanzas_table.heading("categoria", text="Categoria")
-        Finanzas_table.heading("subcategoria", text="Subcategoria")
-        Finanzas_table.heading("monto", text="Monto")
-        Finanzas_table.heading("fecha", text="Fecha")
-        Finanzas_table.heading("descripcion", text="Descripcion")
-        Finanzas_table['show'] = 'headings'
-        Finanzas_table.column("tipo", width=100)
-        Finanzas_table.column("categoria", width=100)
-        Finanzas_table.column("subcategoria", width=100)
-        Finanzas_table.column("monto", width=100)
-        Finanzas_table.column("fecha", width=100)
-        Finanzas_table.column("descripcion", width=100)
-        Finanzas_table.pack(fill=BOTH, expand=1)
+        scroll_x.config(command=self.Finanzas_table.xview)
+        scroll_y.config(command=self.Finanzas_table.yview)
+        self.Finanzas_table.heading("Id", text="Id")
+        self.Finanzas_table.heading("Tipo", text="Tipo")
+        self.Finanzas_table.heading("Categoria", text="Categoria")
+        self.Finanzas_table.heading("Subcategoria", text="Subcategoria")
+        self.Finanzas_table.heading("Monto", text="Monto")
+        self.Finanzas_table.heading("Fecha", text="Fecha")
+        self.Finanzas_table.heading("Descripcion", text="Descripcion")
+        self.Finanzas_table['show'] = 'headings'
+        self.Finanzas_table.column("Id", width=50)
+        self.Finanzas_table.column("Tipo", width=100)
+        self.Finanzas_table.column("Categoria", width=100)
+        self.Finanzas_table.column("Subcategoria", width=100)
+        self.Finanzas_table.column("Monto", width=100)
+        self.Finanzas_table.column("Fecha", width=100)
+        self.Finanzas_table.column("Descripcion", width=100)
+        self.Finanzas_table.pack(fill=BOTH, expand=1)
 
 
 
+    def mostrar_saldo(self):
+        # Crea la ventana emergente
+        saldo_window = Toplevel()
+        saldo_window.title("Saldo Actual")
+
+        # Crea un marco para colocar los widgets
+        Manage_Frame = Frame(saldo_window)
+        Manage_Frame.pack(fill="both", expand=True)
+
+        # Crea las etiquetas y cajas de texto
+        lbl_efectivo = Label(Manage_Frame, text="Efectivo:")
+        lbl_efectivo.grid(row=0, column=0, sticky="e", padx=10, pady=5)
+        txt_efectivo = Entry(Manage_Frame)
+        txt_efectivo.grid(row=0, column=1, padx=10, pady=5)
+
+        lbl_davivienda_k = Label(Manage_Frame, text="Davivienda Karla:")
+        lbl_davivienda_k.grid(row=1, column=0, sticky="e", padx=10, pady=5)
+        txt_davivienda_k = Entry(Manage_Frame)
+        txt_davivienda_k.grid(row=1, column=1, padx=10, pady=5)
+
+        lbl_davivienda_d = Label(Manage_Frame, text="Davivienda Daniel:")
+        lbl_davivienda_d.grid(row=2, column=0, sticky="e", padx=10, pady=5)
+        txt_davivienda_d = Entry(Manage_Frame)
+        txt_davivienda_d.grid(row=2, column=1, padx=10, pady=5)
+
+        lbl_nequi_k = Label(Manage_Frame, text="Nequi Karla:")
+        lbl_nequi_k.grid(row=3, column=0, sticky="e", padx=10, pady=5)
+        txt_nequi_k = Entry(Manage_Frame)
+        txt_nequi_k.grid(row=3, column=1, padx=10, pady=5)
+
+        lbl_nequi_d = Label(Manage_Frame, text="Nequi Daniel :")
+        lbl_nequi_d.grid(row=4, column=0, sticky="e", padx=10, pady=5)
+        txt_nequi_d = Entry(Manage_Frame)
+        txt_nequi_d.grid(row=4, column=1, padx=10, pady=5)
+
+        lbl_billetera = Label(Manage_Frame, text="Billetera V:")
+        lbl_billetera.grid(row=5, column=0, sticky="e", padx=10, pady=5)
+        txt_billetera = Entry(Manage_Frame)
+        txt_billetera.grid(row=5, column=1, padx=10, pady=5)
+
+        lbl_total = Label(Manage_Frame, text="Total:")
+        lbl_total.grid(row=6, column=0, sticky="e", padx=10, pady=5)
+        txt_total = Entry(Manage_Frame)
+        txt_total.grid(row=6, column=1, padx=10, pady=5)
+
+        # Asigna valores a las cajas de texto
+        txt_efectivo.insert(0, "0")
+        txt_davivienda_k.insert(0, "0")
+        txt_davivienda_d.insert(0, "0")
+        txt_nequi_k.insert(0, "0")
+        txt_nequi_d.insert(0, "0")
+        txt_billetera.insert(0, "0")
+
+        # boton para mostrar el total
+        btn_total = Button(Manage_Frame, text="Total")
+        btn_total.grid(row=7, column=1, sticky="e", padx=10, pady=5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    '''
+    def mostrar_saldo(self):
+        self.saldo = 0
+        self.saldo = self.saldo + self.monto
+        self.lbl_saldo.config(text=self.saldo)
+
+        
+
+    def agregar_montos(self):
+        if self.tipo_var.get() == "" or self.categoria_var.get() == "" or self.subcategoria_var.get() == "" or self.monto_var.get() == "" or self.fecha_var.get() == "":
+            messagebox.showerror("Error", "Todos los campos son requeridos")
+        else:
+            con = pymysql.connect(host="localhost", user="root", password="Alejo263.", database="finanzApp")
+            cur = con.cursor()
+            cur.execute("insert into finanzas values(%s,%s,%s,%s,%s,%s,%s)", (
+                self.tipo_var.get(),
+                self.categoria_var.get(),
+                self.subcategoria_var.get(),
+                self.monto_var.get(),
+                self.fecha_var.get(),
+                self.descripcion_txt.get('1.0', END),
+                self.id_var.get()
+            ))
+            con.commit()
+            self.fetch_data()
+            self.clear()
+            con.close()
+            messagebox.showinfo("Exito", "Registro agregado exitosamente")
+
+    def fetch_data(self):
+        con = pymysql.connect(host="localhost", user="root", password="Alejo263.", database="finanzApp")
+        cur = con.cursor()
+        cur.execute("select * from montos")
+        rows = cur.fetchall()
+        if len(rows) != 0:
+            self.Finanzas_table.delete(*self.Finanzas_table.get_children())
+            for row in rows:
+                self.Finanzas_table.insert('', END, values=row)
+            con.commit()
+        con.close()
+
+    def clear(self):
+        self.tipo_var.set("")
+        self.categoria_var.set("")
+        self.subcategoria_var.set("")
+        self.monto_var.set("")
+        self.fecha_var.set("")
+        self.descripcion_txt.delete("1.0", END)
+        self.id_var.set("")
+
+
+
+
+    def get_cursor(self, ev):
+        cursor_row = self.Finanzas_table.focus()
+        contents = self.Finanzas_table.item(cursor_row)
+        row = contents['values']
+        #print(row)
+
+
+        self.tipo.set(row[0])
+        self.categoria.set(row[1])
+        self.subcategoria.set(row[2])
+        self.monto.set(row[3])
+        self.fecha.set(row[4])
+        self.txt_descripcion.delete("1.0", END)
+        self.txt_descripcion.insert(END, row[5])
+        self.id = row[6]
+
+
+    def update_data(self):
+        conexion = pymysql.connect(host="localhost", user="root", password="Alejo263.", database="finanzApp")
+        cursor = conexion.cursor()
+        cursor.execute("UPDATE montos SET tipo=%s, categoria=%s, subcategoria=%s, monto=%s, fecha=%s, descripcion=%s WHERE id=%s",
+                          (self.tipo.get(),
+                            self.categoria.get(),
+                            self.subcategoria.get(),
+                            self.monto.get(),
+                            self.fecha.get(),
+                            self.txt_descripcion.get("1.0", END),
+                            self.id()))
+        conexion.commit()
+        self.fetch_data()
+        self.clear()
+        conexion.close()
+
+        # Agrega el registro
+        messagebox.showinfo("FinanzApp", "Registro actualizado con exito")
+
+    def delete_data(self):
+        conexion = pymysql.connect(host="localhost", user="root", password="Alejo263.", database="finanzApp")
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM montos WHERE id=%s", self.id)
+
+        conexion.commit()
+        self.fetch_data()
+        self.clear()
+        conexion.close()
+
+        # Agrega el registro
+        messagebox.showinfo("FinanzApp", "Registro eliminado con exito")
+
+    def search_data(self):
+        conexion = pymysql.connect(host="localhost", user="root", password="Alejo263.", database="finanzApp")
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM montos WHERE " + str(self.buscar_por.get()) + " LIKE '%" + str(self.buscar_txt.get()) + "%'")
+        rows = cursor.fetchall()
+        if len(rows) != 0:
+            self.Finanzas_table.delete(*self.Finanzas_table.get_children())
+            for row in rows:
+                self.Finanzas_table.insert('', END, values=row)
+            conexion.commit()
+        conexion.close()
+    '''
 
 
 ventana = Tk()
