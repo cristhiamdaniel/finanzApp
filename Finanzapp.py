@@ -4,24 +4,23 @@ import pymysql
 from tkinter import messagebox
 from credencialesMYSQL import *
 
-def mensaje():
-    '''
-    Función que permite salir de la aplicación
-    :return: None
-    '''
+'''
+def mensaje(ventana):
+
     answer = messagebox.askquestion("Salir", "¿Desea salir de la aplicación?")
     if(answer == "yes"):
         ventana.destroy()
-
+'''
 class FinanzApp:
-    def __init__(self, ventana):
+    def __init__(self):
         '''
         Constructor de la clase FinanzApp
         :param ventana: ventana principal de la aplicación
         '''
+        self.ventana = Tk()
 
         # Configuración de la ventana
-        self.ventana = ventana
+        #self.ventana = ventana
         self.ventana.title("FinanzApp")
         self.ventana.geometry("1370x700+0+0")
         self.ventana.resizable(False, False)
@@ -32,7 +31,7 @@ class FinanzApp:
         title.pack(side=TOP)
 
         # Boton para salir de la aplicación
-        Exit_btn = Button(ventana, text="Salir", command=mensaje, font=("Consolas", 10, "bold"), bg="black", fg="white")
+        Exit_btn = Button(self.ventana, text="Salir", command = self.mensaje, font=("Consolas", 10, "bold"), bg="black", fg="white")
         Exit_btn.place(x=1300, y=0)
 
         # Variables: Id, Tipo, Categoria, Subcategoria, Monto, Fecha, Descripcion, saldo, busqueda
@@ -143,25 +142,25 @@ class FinanzApp:
             elif self.categoria_var.get() == "Servicios":
                 combo_subcategoria['values'] = ("Agua", "Luz", "Gas", "Internet", "Celular")
             elif self.categoria_var.get() == "Deudas":
-                combo_subcategoria['values'] = ("Copebis", "Davivienda")
+                combo_subcategoria['values'] = ("Copebis", "Davivienda", "Otros")
             elif self.categoria_var.get() == "Deporte":
-                combo_subcategoria['values'] = ("Gimnasio", "Futbol", "Otros")
+                combo_subcategoria['values'] = ("Gimnasio", "Futbol", "Compensar")
             elif self.categoria_var.get() == "Ahorro":
-                combo_subcategoria['values'] = ("Copebis Karla", "Copebis Daniel", "Otros")
+                combo_subcategoria['values'] = ("Copebis Karla", "Copebis Daniel", "Cadena", "Apto cuota")
             elif self.categoria_var.get() == "Educacion":
                 combo_subcategoria['values'] = ("Doctorado", "Jardin")
             elif self.categoria_var.get() == "Alimentacion":
                 combo_subcategoria['values'] = ("Mercado", "Restaurantes", "Otros")
             elif self.categoria_var.get() == "Transporte":
-                combo_subcategoria['values'] = ("Gasolina", "Transporte Publico", "Otros")
+                combo_subcategoria['values'] = ("Gasolina", "Transporte Publico", "Parqueaderos", "Otros")
             elif self.categoria_var.get() == "Diversion":
-                combo_subcategoria['values'] = ("Viajes", "Otros")
+                combo_subcategoria['values'] = ("Viajes", "Salidas", "Otros")
             elif self.categoria_var.get() == "Salud":
-                combo_subcategoria['values'] = ("Medicamentos", "Citas", "Otros")
+                combo_subcategoria['values'] = ("Medicamentos", "Citas", "Plan Comp", "Otros")
             elif self.categoria_var.get() == "Mesadas":
                 combo_subcategoria['values'] = ("Daniel", "Karla", "Nicolas")
             elif self.categoria_var.get() == "Aseo":
-                combo_subcategoria['values'] = ("Casa", "Ropa", "Automovil", "Otros")
+                combo_subcategoria['values'] = ("Casa", "Lavanderia", "Automovil", "Implementos Hogar", "Aseo Personal")
             elif self.categoria_var.get() == "Apoyo":
                 combo_subcategoria['values'] = ("Daniel", "Karla", "Otros")
             elif self.categoria_var.get() == "Otros":
@@ -265,6 +264,13 @@ class FinanzApp:
         self.fetch_data()
         self.Finanzas_table.pack(fill=BOTH, expand=1)
 
+        self.ventana.mainloop()
+
+    def mensaje(self):
+
+        answer = messagebox.askquestion("Salir", "¿Desea salir de la aplicación?")
+        if (answer == "yes"):
+            self.ventana.destroy()
     def agregar_montos(self):
         if self.tipo_var.get() == "" or self.categoria_var.get() == "" or self.subcategoria_var.get() == "" or self.monto_var.get() == "" or self.fecha_var.get() == "":
             messagebox.showerror("Error", "Todos los campos son requeridos")
@@ -397,7 +403,10 @@ class FinanzApp:
 
         messagebox.showinfo("FinanzApp", "Saldo actualizado exitosamente")
 
+
+'''
 # Inicio de la aplicación
 ventana = Tk()
 app = FinanzApp(ventana)
 ventana.mainloop()
+'''
