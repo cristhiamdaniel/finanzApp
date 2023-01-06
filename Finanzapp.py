@@ -24,7 +24,7 @@ class FinanzApp:
         self.ventana.title("FinanzApp")
         self.ventana.geometry("1370x700+0+0")
         self.ventana.resizable(False, False)
-        self.saldo_inicial = 500000 # Saldo inicial de la cuenta
+        self.saldo_inicial = 2352500 # Saldo inicial de la cuenta
 
         # Titulo de la ventana
         title = Label(self.ventana, text="FinanzApp", bd=10, relief=GROOVE, font=("Consolas", 20, "bold"), bg="black", fg="white")
@@ -46,7 +46,7 @@ class FinanzApp:
         self.buscar_txt = StringVar()
 
         # Caja de texto que muestre el saldo actual, se inicia con 500000 y se actualizara con cada movimiento
-        self.saldo.set(500000)
+        #self.saldo.set(500000)
         self.saldo_actual = Label(self.ventana, text="Su saldo actual es: $", font=("Consolas", 15, "bold"), bg="black", fg="white")
         self.saldo_actual.place(x=20, y=50)
         self.saldo_actual = Label(self.ventana, textvariable=self.saldo, font=("Consolas", 15, "bold"), bg="white", fg="black")
@@ -126,7 +126,7 @@ class FinanzApp:
             elif self.tipo_var.get() == "EgrFijo":
                 combo_categoria['values'] = ("Vivienda", "Servicios", "Deudas", "Deporte", "Ahorro")
             elif self.tipo_var.get() == "EgrVariable":
-                combo_categoria['values'] = ("Alimentacion", "Transporte", "Diversion", "Salud", "Mesadas", "Aseo", "Apoyo", "Otros")
+                combo_categoria['values'] = ("Alimentacion", "Transporte", "Diversion", "Salud", "Mesadas", "Aseo", "Apoyo", "Hogar", "Mascotas")
             else:
                 combo_categoria['values'] = []
             self.categoria_var.set("")
@@ -163,8 +163,10 @@ class FinanzApp:
                 combo_subcategoria['values'] = ("Casa", "Lavanderia", "Automovil", "Implementos Hogar", "Aseo Personal")
             elif self.categoria_var.get() == "Apoyo":
                 combo_subcategoria['values'] = ("Daniel", "Karla", "Otros")
-            elif self.categoria_var.get() == "Otros":
-                combo_subcategoria['values'] = ("Otros")
+            elif self.categoria_var.get() == "Hogar":
+                combo_subcategoria['values'] = ("Mantenimiento", "Otros")
+            elif self.categoria_var.get() == "Mascotas":
+                combo_subcategoria['values'] = ("Comida", "Medicamentos", "Veterinario", "Otros")
             else:
                 combo_subcategoria['values'] = []
             self.subcategoria_var.set("")
@@ -277,19 +279,42 @@ class FinanzApp:
         else:
             con = pymysql.connect(host=host, user=user, password=password, database=database)
             cur = con.cursor()
+
+            '''
+            # Obtenemos el mayor valor de id
+            cur.execute("SELECT MAX(id) FROM Amount")
+            max_id = cur.fetchone()[0]
+            if max_id == None:
+                max_id = 1
+            else:
+                max_id = max_id + 1
+
+            cur.execute("INSERT INTO Amount VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                        (max_id,
+                         self.tipo_var.get(),
+                         self.categoria_var.get(),
+                         self.subcategoria_var.get(),
+                         self.monto_var.get(),
+                         self.fecha_var.get(),
+                         self.txt_descripcion.get('1.0', END)))
+            '''
             cur.execute("INSERT INTO Amount values(%s, %s, %s, %s, %s, %s, %s)",
+
                         (self.id_var.get(),
-                            self.tipo_var.get(),
-                            self.categoria_var.get(),
-                            self.subcategoria_var.get(),
-                            self.monto_var.get(),
-                            self.fecha_var.get(),
-                            self.txt_descripcion.get('1.0', END)
-                        ))
+                         self.tipo_var.get(),
+                         self.categoria_var.get(),
+                         self.subcategoria_var.get(),
+                         self.monto_var.get(),
+                         self.fecha_var.get(),
+                         self.txt_descripcion.get('1.0', END)
+                         ))
+
             con.commit()
             self.fetch_data()
             self.clear()
             con.close()
+
+            #self.id_var.set(max_id)
 
             messagebox.showinfo("FinanzApp", "Registro agregado exitosamente")
 
@@ -309,11 +334,23 @@ class FinanzApp:
         counter = 1
         con = pymysql.connect(host=host, user=user, password=password, database=database)
         cur = con.cursor()
+
+        cur.execute("SELECT MAX(id) FROM Amount")
+        max_id = cur.fetchone()[0]
+        if max_id == None:
+            max_id = 1
+        else:
+            max_id = max_id + 1
+        #self.id_var.set(max_id)
+
         cur.execute("SELECT * FROM Amount")
+        '''
         rows = cur.fetchall()
         for row in rows:
             counter += 1
-        self.id_var.set(counter + 1)
+        '''
+        self.id_var.set(max_id)
+        #self.id_var.set(counter + 1)
         self.tipo_var.set("")
         self.categoria_var.set("")
         self.subcategoria_var.set("")
@@ -326,7 +363,14 @@ class FinanzApp:
         contents = self.Finanzas_table.item(cursor_row)
         row = contents['values']
         #print(row)
-        self.id_var.set(row[0])
+        #self.id_var.set(row[0])
+        try:
+            # código que puede generar la excepción IndexError
+            self.id_var.set(row[0])
+        except IndexError:
+            # código que se ejecuta si se produce la excepción IndexError
+            print("Error: índice fuera de rango")
+
         self.tipo_var.set(row[1])
         self.categoria_var.set(row[2])
         self.subcategoria_var.set(row[3])
@@ -336,6 +380,7 @@ class FinanzApp:
         self.txt_descripcion.insert(END, row[6])
 
     def update_data(self):
+
         if self.tipo_var.get() == "" or self.categoria_var.get() == "" or self.subcategoria_var.get() == "" or self.monto_var.get() == "" or self.fecha_var.get() == "":
             messagebox.showerror("Error", "Seleccione un registro")
         else:
@@ -350,6 +395,7 @@ class FinanzApp:
                             self.txt_descripcion.get('1.0', END),
                             self.id_var.get()
                         ))
+
             con.commit()
             self.fetch_data()
             self.clear()
@@ -369,6 +415,8 @@ class FinanzApp:
             self.fetch_data()
             self.clear()
             messagebox.showinfo("FinanzApp", "Registro eliminado exitosamente")
+
+
 
     def buscar_data(self):
         con = pymysql.connect(host=host, user=user, password=password, database=database)
