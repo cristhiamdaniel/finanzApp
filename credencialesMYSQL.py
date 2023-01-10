@@ -1,8 +1,0 @@
-#host = "localhost"
-host = "162.241.61.245"
-#user = "root"
-user = "camposju_cristhiamdaniel"
-#password = "Alejo263."
-password = "AVmDvjM7xLsy"
-#database = "finanzApp"
-database = "camposju_bd_app"
