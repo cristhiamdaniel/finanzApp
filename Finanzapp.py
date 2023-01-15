@@ -149,7 +149,7 @@ class FinanzApp:
             if self.categoria_var.get() == "Salario":
                 combo_subcategoria['values'] = ("Gobierno", "Universidad")
             elif self.categoria_var.get() == "Extras":
-                combo_subcategoria['values'] = ("Trading", "Judicial")
+                combo_subcategoria['values'] = ("Trading", "Judicial", "Prestamos")
             elif self.categoria_var.get() == "Vivienda":
                 combo_subcategoria['values'] = ("Arriendo", "Ama de casa")
             elif self.categoria_var.get() == "Servicios":
